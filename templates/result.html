@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Результат</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <main class="container">
+    <h1>Тест завершён!</h1>
+    <section class="panel result">
+      <p class="score">{{ correct }} из {{ total }}</p>
+      <p>Правильных ответов: {{ percent }}%</p>
+      {% if percent == 100 %}
+        <p>Отличный результат! Ты правильно определил все настоящие фотографии.</p>
+      {% elif percent >= 70 %}
+        <p>Хороший результат. Посмотри на ошибки ниже, чтобы закрепить навык.</p>
+      {% else %}
+        <p>Есть что потренировать. Сравни настоящие фото и версии ИИ в разборе ниже.</p>
+      {% endif %}
+    </section>
+
+    {% if review %}
+      <h2>Что стоит повторить</h2>
+      <p>Ниже показаны пары, в которых был выбран неправильный ответ. Настоящая фотография — слева, версия ИИ — справа.</p>
+      {% for item in review %}
+        <section class="panel">
+          <h3>Вопрос {{ item.number }}</h3>
+          <div class="images review-images">
+            <div>
+              <span class="option-title">Настоящее фото</span>
+              <img src="{{ url_for('static', filename='static/' + item.real) if false else url_for('static', filename=item.real) }}" alt="Настоящее фото">
+            </div>
+            <div>
+              <span class="option-title">Версия ИИ</span>
+              <img src="{{ url_for('static', filename=item.ai) }}" alt="Версия ИИ">
+            </div>
+          </div>
+        </section>
+      {% endfor %}
+    {% else %}
+      <p>Ошибок нет — разбирать нечего!</p>
+    {% endif %}
+    <a class="button-link" href="{{ url_for('index') }}">Пройти ещё раз</a>
+  </main>
+</body>
+</html>
