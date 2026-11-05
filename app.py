@@ -11,7 +11,7 @@ app.secret_key = "change-this-secret-key"
 # This prevents large quizzes (especially "all pairs") from exceeding
 # the browser's cookie size limit.
 app.config["SESSION_TYPE"] = "filesystem"
-app.config["SESSION_FILE_DIR"] = str(Path(__file__).parent / ".flask_session")
+app.config["SESSION_FILE_DIR"] = str(Path(__file__).parent / "flask_session")
 app.config["SESSION_PERMANENT"] = False
 app.config["SESSION_USE_SIGNER"] = True
 Session(app)
