@@ -1,2 +1,3 @@
 Flask>=3.0,<4.0
 gunicorn
+Flask-Session>=0.8,<1.0

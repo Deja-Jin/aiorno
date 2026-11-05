@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Результат</title>
+  <title>Настоящее фото или сгенерированное ИИ</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
@@ -22,25 +22,34 @@
     </section>
 
     {% if review %}
-      <h2>Что стоит повторить</h2>
-      <p>Ниже показаны пары, в которых был выбран неправильный ответ. Настоящая фотография — слева, версия ИИ — справа.</p>
+      <h2>Разбор всех фотографий</h2>
+      <p>Здесь показаны все пары из теста. Слева — настоящая фотография, справа — версия ИИ. Под каждой парой объясняется, на какие отличия стоит обратить внимание.</p>
       {% for item in review %}
-        <section class="panel">
-          <h3>Вопрос {{ item.number }}</h3>
+        <section class="panel pair-review">
+          <div class="pair-review-heading">
+            <h3>Вопрос {{ item.number }}</h3>
+            {% if item.correct %}
+              <span class="answer-status answer-correct">Ответ правильный</span>
+            {% else %}
+              <span class="answer-status answer-wrong">Ответ неправильный</span>
+            {% endif %}
+          </div>
           <div class="images review-images">
             <div>
               <span class="option-title">Настоящее фото</span>
-              <img src="{{ url_for('static', filename='static/' + item.real) if false else url_for('static', filename=item.real) }}" alt="Настоящее фото">
+              <img src="{{ url_for('static', filename=item.real) }}" alt="Настоящее фото">
             </div>
             <div>
               <span class="option-title">Версия ИИ</span>
               <img src="{{ url_for('static', filename=item.ai) }}" alt="Версия ИИ">
             </div>
           </div>
+          <div class="explanation-box">
+            <h4>В чём отличие?</h4>
+            <p>{{ item.explanation }}</p>
+          </div>
         </section>
       {% endfor %}
-    {% else %}
-      <p>Ошибок нет — разбирать нечего!</p>
     {% endif %}
     <a class="button-link" href="{{ url_for('index') }}">Пройти ещё раз</a>
   </main>

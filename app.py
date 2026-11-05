@@ -1,15 +1,37 @@
 from pathlib import Path
 import random
+import json
 from flask import Flask, render_template, request, session, redirect, url_for
+from flask_session import Session
 
 app = Flask(__name__)
 app.secret_key = "change-this-secret-key"
+
+# Store session data on the server instead of in the browser cookie.
+# This prevents large quizzes (especially "all pairs") from exceeding
+# the browser's cookie size limit.
+app.config["SESSION_TYPE"] = "filesystem"
+app.config["SESSION_FILE_DIR"] = str(Path(__file__).parent / ".flask_session")
+app.config["SESSION_PERMANENT"] = False
+app.config["SESSION_USE_SIGNER"] = True
+Session(app)
 
 ROOT = Path(__file__).parent
 REAL_DIR = ROOT / "static" / "images" / "real"
 AI_DIR = ROOT / "static" / "images" / "ai"
 ALLOWED_EXTENSIONS = {".jpg", ".jpeg", ".png", ".webp", ".gif"}
 MAX_QUESTIONS = 100
+EXPLANATIONS_FILE = ROOT / "pair_explanations.json"
+
+
+def load_explanations():
+    """Load pair explanations keyed by the real photo filename."""
+    try:
+        with EXPLANATIONS_FILE.open("r", encoding="utf-8") as file:
+            data = json.load(file)
+        return data if isinstance(data, dict) else {}
+    except (OSError, json.JSONDecodeError):
+        return {}
 
 
 def image_files(folder):
@@ -55,6 +77,10 @@ def find_pairs():
                 "real": f"images/real/{real_path.name}",
                 "ai": f"images/ai/{ai_path.name}",
                 "name": real_path.stem,
+                "explanation": load_explanations().get(
+                    real_path.name,
+                    "Пояснение для этой пары пока не добавлено. Его можно внести в файл pair_explanations.json.",
+                ),
             })
     return pairs
 
@@ -89,6 +115,7 @@ def index():
             random.shuffle(options)
             questions.append({
                 "name": pair["name"],
+                "explanation": pair["explanation"],
                 "options": options,
                 "correct": next(i for i, opt in enumerate(options) if opt["kind"] == "real"),
             })
@@ -146,13 +173,14 @@ def result():
     correct_count = sum(1 for a in answers if a["correct"])
     review = []
     for answer in answers:
-        if not answer["correct"]:
-            q = questions[answer["question"]]
-            review.append({
-                "number": answer["question"] + 1,
-                "real": next(opt["src"] for opt in q["options"] if opt["kind"] == "real"),
-                "ai": next(opt["src"] for opt in q["options"] if opt["kind"] == "ai"),
-            })
+        q = questions[answer["question"]]
+        review.append({
+            "number": answer["question"] + 1,
+            "correct": answer["correct"],
+            "real": next(opt["src"] for opt in q["options"] if opt["kind"] == "real"),
+            "ai": next(opt["src"] for opt in q["options"] if opt["kind"] == "ai"),
+            "explanation": q.get("explanation", "Пояснение пока не добавлено."),
+        })
     return render_template(
         "result.html",
         correct=correct_count,
