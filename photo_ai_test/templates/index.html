@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Настоящее фото или сгенерированное ИИ</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <div class="intro-overlay" id="introOverlay" role="dialog" aria-modal="true" aria-labelledby="introTitle">
+    <section class="intro-modal">
+      <button class="intro-close" id="introClose" type="button" aria-label="Закрыть окно">&times;</button>
+      <h2 id="introTitle">Добро пожаловать!</h2>
+      <p>Этот сайт создан в рамках школьного проекта для 9 класса. Его тема — изображения, созданные искусственным интеллектом, и их отличие от настоящих фотографий.</p>
+      <p>Здесь тебе предстоит сравнивать пары изображений и выбирать настоящее фото. Цель проекта — показать, насколько реалистично сегодня может выглядеть контент, созданный ИИ, и почему важно критически оценивать увиденное в интернете.</p>
+      <p class="intro-note">Это учебная викторина: некоторые изображения могут быть очень похожи, поэтому внимательно изучай детали.</p>
+      <button class="intro-start" id="introStart" type="button">Понятно, начать</button>
+    </section>
+  </div>
+  <main class="container">
+    <h1>Настоящее фото или сгенерированное ИИ</h1>
+    <p>В каждом вопросе сравни две версии одной и той же фотографии. Выбери ту, которая настоящая.</p>
+    <section class="panel">
+      <p><strong>Найдено пар:</strong> {{ available }}</p>
+      {% if available == 0 %}
+        <p class="hint">Пока не найдено ни одной совпадающей пары. Проверь имена файлов и папки ниже.</p>
+      {% endif %}
+      {% if error %}<p class="error">{{ error }}</p>{% endif %}
+      <form method="post">
+        <label for="question_count">Количество вопросов</label>
+        <select id="question_count" name="question_count">
+          {% for n in [5, 10, 20, 30, 50, 100] %}
+            {% if n <= available %}
+              <option value="{{ n }}">{{ n }}</option>
+            {% endif %}
+          {% endfor %}
+          {% if available > 0 %}
+            <option value="all">Все пары ({{ [available, 100]|min }})</option>
+          {% endif %}
+        </select>
+        <button type="submit" {% if available == 0 %}disabled{% endif %}>Начать тест</button>
+      </form>
+    </section>
+
+    <section class="panel tips-panel">
+      <h2>Памятка: как отличить изображение ИИ от настоящего фото</h2>
+      <p>При проверке изображения обращай внимание на несколько деталей. Ни один признак сам по себе не доказывает, что картинка создана ИИ: современные генераторы становятся всё реалистичнее.</p>
+      <div class="tips-grid">
+        <article class="tip-card">
+          <h3>1. Мелкие детали</h3>
+          <p>Рассмотри пальцы, зубы, уши, украшения и мелкие предметы. У ИИ иногда встречаются странные формы, лишние или нечёткие элементы.</p>
+        </article>
+        <article class="tip-card">
+          <h3>2. Текст и надписи</h3>
+          <p>Проверь вывески, этикетки, номера и надписи на одежде. ИИ может создавать бессмысленные буквы или искажать слова.</p>
+        </article>
+        <article class="tip-card">
+          <h3>3. Свет и тени</h3>
+          <p>Посмотри, согласуются ли тени с источниками света. Обрати внимание на отражения в зеркалах, окнах и блестящих поверхностях.</p>
+        </article>
+        <article class="tip-card">
+          <h3>4. Фон и перспективу</h3>
+          <p>Изучи задний план: предметы могут сливаться, повторяться или иметь необычную форму. Проверь, естественно ли выглядят линии и пропорции.</p>
+        </article>
+        <article class="tip-card">
+          <h3>5. Логика изображения</h3>
+          <p>Задай себе вопрос: всё ли на картинке выглядит правдоподобно? Иногда отдельные объекты выглядят нормально, но вместе образуют странную сцену.</p>
+        </article>
+        <article class="tip-card">
+          <h3>6. Проверяй источник</h3>
+          <p>Если важно установить подлинность, не полагайся только на внешний вид. Ищи первоисточник, контекст публикации и подтверждения из других источников.</p>
+        </article>
+      </div>
+      <p class="tips-warning"><strong>Важно:</strong> это лишь подсказки, а не точный способ распознавания. У настоящих фотографий тоже бывают искажения, а изображения ИИ могут не иметь заметных ошибок.</p>
+    </section>
+  </main>
+  <script>
+    const introOverlay = document.getElementById('introOverlay');
+    function closeIntro() {
+      introOverlay.classList.add('intro-hidden');
+    }
+    document.getElementById('introClose').addEventListener('click', closeIntro);
+    document.getElementById('introStart').addEventListener('click', closeIntro);
+    introOverlay.addEventListener('click', (event) => {
+      if (event.target === introOverlay) closeIntro();
+    });
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape') closeIntro();
+    });
+  </script>
+</body>
+</html>

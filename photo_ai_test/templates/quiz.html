@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Настоящее фото или сгенерированное ИИ</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <main class="container">
+    <p class="progress">Вопрос {{ number }} из {{ total }}</p>
+    <h1>Какая фотография настоящая?</h1>
+    <p>Это две версии одного изображения — одна настоящая, другая создана ИИ.</p>
+    <form method="post">
+      <div class="images">
+        {% for option in question.options %}
+          <label class="image-option">
+            <input type="radio" name="answer" value="{{ loop.index0 }}" required>
+            <span class="option-title">Вариант {{ "А" if loop.index == 1 else "Б" }}</span>
+            <img src="{{ url_for('static', filename=option.src) }}" alt="Вариант {{ loop.index }}">
+          </label>
+        {% endfor %}
+      </div>
+      <button type="submit">Ответить</button>
+    </form>
+  </main>
+</body>
+</html>
