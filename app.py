@@ -1,22 +1,27 @@
 from pathlib import Path
+import os
 import random
 import json
 from flask import Flask, render_template, request, session, redirect, url_for
 from flask_session import Session
 
+ROOT = Path(__file__).parent
+
 app = Flask(__name__)
-app.secret_key = "change-this-secret-key"
+# Set SECRET_KEY in Render's Environment settings. The fallback is for local testing only.
+app.secret_key = os.environ.get("SECRET_KEY", "local-development-only-change-me")
 
 # Store session data on the server instead of in the browser cookie.
 # This prevents large quizzes (especially "all pairs") from exceeding
 # the browser's cookie size limit.
 app.config["SESSION_TYPE"] = "filesystem"
-app.config["SESSION_FILE_DIR"] = str(Path(__file__).parent / "flask_session")
+SESSION_DIR = ROOT / "flask_session"
+SESSION_DIR.mkdir(parents=True, exist_ok=True)
+app.config["SESSION_FILE_DIR"] = str(SESSION_DIR)
 app.config["SESSION_PERMANENT"] = False
 app.config["SESSION_USE_SIGNER"] = True
 Session(app)
 
-ROOT = Path(__file__).parent
 REAL_DIR = ROOT / "static" / "images" / "real"
 AI_DIR = ROOT / "static" / "images" / "ai"
 ALLOWED_EXTENSIONS = {".jpg", ".jpeg", ".png", ".webp", ".gif"}
@@ -193,4 +198,4 @@ def result():
 if __name__ == "__main__":
     REAL_DIR.mkdir(parents=True, exist_ok=True)
     AI_DIR.mkdir(parents=True, exist_ok=True)
-    app.run(debug=True)
+    app.run(debug=False)
